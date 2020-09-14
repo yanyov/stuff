@@ -1,0 +1,45 @@
+- name: Install docker prerequisites
+  apt:
+   name: "{{ docker_prerequisites }}"
+   state: present
+   update_cache: yes
+
+- name: Add Docker’s official GPG key
+  apt_key:
+    url: "{{ docker_apt_key }}"
+    state: present
+
+- name: Add docker repository
+  apt_repository:
+    repo: "{{ docker_repo }}"
+    state: present
+    filename: docker
+
+- name: Install docker prerequisites
+  apt:
+   name: "{{ docker_pkgs }}"
+   state: present
+   update_cache: yes
+
+- name: Enable Docker CE service on startup
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create swarm cluster
+  block:
+    - shell: "docker node ls"
+      register: nodes
+      failed_when: false
+      changed_when: false
+      when: "inventory_hostname == docker_nodes[0]"
+    - set_fact: 
+        swarm: "{{ nodes.rc }}"
+      when: "inventory_hostname == docker_nodes[0]" 
+    - shell: "docker swarm init --advertise-addr {{ hostvars[inventory_hostname].ansible_host }}"
+      run_once: true
+      register: swarm_init
+    - shell: "{{ swarm_init.stdout_lines.4 }}"
+      when: ("swarm != 0") and (inventory_hostname != docker_nodes[0]) 
+  when: "docker_swarm | default(false)"

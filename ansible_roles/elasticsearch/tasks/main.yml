@@ -1,0 +1,44 @@
+---
+# tasks file for elasticsearch
+- name: Set kernel parameters
+  sysctl:
+    name: vm.max_map_count
+    value: 262144
+    state: present
+
+- name: Add an Apt signing key
+  apt_key:
+    url: "{{ elasticsearch_apt_key }}"
+    state: present
+
+- name: Install elasticsearch prerequisites
+  apt:
+    name: "{{ elasticsearch_prerequisites }}"
+    state: present
+
+- name: Add elasticsearch repository
+  apt_repository:
+    repo: "{{ elasticsearch_repository }}"
+    state: present
+    filename: elasticsearch
+
+- name: Install elasticsearch
+  apt:
+    name: elasticsearch
+    state: present
+    update_cache: yes
+
+- name: Copy elasticsearch.yml to "{{ elasticsearch_config }}"
+  template:
+    src: elasticsearch.yml.j2
+    dest: "{{ elasticsearch_config }}"
+    owner: root
+    group: elasticsearch
+    mode: '0660'
+  notify: Restart Elasticsearch
+
+- name: Start Elasticsearch
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started

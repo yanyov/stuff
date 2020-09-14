@@ -1,0 +1,45 @@
+pipeline{
+  agent{
+    label 'master'
+  }
+  environment {
+    GIT_REPO = "ssh://git@bitbucket.scalefocus.com:7999/sv/android.git"
+    JFROG_REPO = "http://10.0.5.248:8082/artifactory/soundvision"
+  }
+  stages{
+    stage('Clone sources') {
+        steps {
+        git credentialsId: "bitbucket_key",
+            url: "${GIT_REPO}" 
+        sh "ls -a"
+        }
+    }
+    stage('Compile code') {
+        steps {
+        sh '''cd workshop/
+            pwd
+            ls -a
+            chmod +x gradlew
+            #./gradlew clean build
+            echo "Test" > testfile${BUILD_NUMBER}.txt
+            ls -a'''
+        }
+   }
+    stage('Upload artifact') {
+        steps {
+	  withCredentials([usernamePassword(credentialsId: 'artifactory_creds', passwordVariable: 'PASSWD', usernameVariable: 'USER')]) {
+            sh '''
+          curl -u $USER:$PASSWD --progress-bar -T testfile${BUILD_NUMBER}.txt \
+            -X PUT \"${JFROG_REPO}/testfile${BUILD_NUMBER}.txt\"
+        '''
+	}
+     }
+   }
+  }
+  post {
+    always {
+      deleteDir()
+    }
+  }
+}
+

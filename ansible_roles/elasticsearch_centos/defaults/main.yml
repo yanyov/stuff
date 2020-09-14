@@ -1,0 +1,13 @@
+---
+# defaults file for elasticsearch
+elasticsearch_apt_key: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+elasticsearch_prerequisites:
+  - java-11-openjdk.x86_64
+elasticsearch_repository: "https://artifacts.elastic.co/packages/7.x/yum"
+elasticsearch_http_port: 9200
+elasticsearch_bind: '"_site_","_local_"'
+elasticsearch_config: "/etc/elasticsearch/elasticsearch.yml"
+elasticsearch_cluster_name: elasticsearch
+elasticsearch_nodes: '"{{ ansible_hostname }}"'
+elasticsearch_data_path: "/var/lib/elasticsearch"
+elasticsearch_logs_path: "/var/log/elasticsearch"

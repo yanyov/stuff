@@ -1,0 +1,6 @@
+- hosts: swarm
+  become: yes
+  gather_facts: yes
+  remote_user: ansible
+  roles:
+  - role: docker

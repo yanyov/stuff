@@ -1,0 +1,10 @@
+---
+# defaults file for jenkins
+jenkins_repo_key: "https://jenkins-ci.org/redhat/jenkins-ci.org.key"
+jenkins_repository: "http://pkg.jenkins.io/redhat"
+jenkins_pkgs:
+  - java
+  - jenkins
+jenkins_default_password: "/var/lib/jenkins/secrets/initialAdminPassword"
+jenkins_plugins:
+  - ansible

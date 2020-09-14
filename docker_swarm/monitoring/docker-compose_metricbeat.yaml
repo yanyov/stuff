@@ -1,0 +1,48 @@
+version: '3.8'
+services:   
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:7.7.0 
+    user: root
+    ports:
+    - 5066
+    volumes:
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /:/hostfs:ro
+    command: metricbeat -e -system.hostfs=/hostfs -strict.perms=false
+    configs:
+      - source: metricbeat_config
+        target: /usr/share/metricbeat/metricbeat.yml
+        mode: 0640
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+    environment:
+    - ELASTICSEARCH_HOSTS=["10.0.5.241:9200", "10.0.5.245:9200", "10.0.5.246:9200"]
+
+  logspout:
+    image: gliderlabs/logspout:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      multiline+raw://10.0.5.245:31311
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+
+configs:
+  metricbeat_config:
+    file: ./metricbeat.yml

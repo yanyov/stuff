@@ -1,0 +1,23 @@
+---
+# defaults file for sonarqube
+sonarqube_postgre_repo: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+sonarqube_prereq:
+  - java-11-openjdk
+  - unzip
+  - "{{ sonarqube_postgre_repo }}"
+  - python-psycopg2
+sonarquebe_postgre_pkgs:
+  - postgresql10-server
+  - postgresql10-contrib
+sonarqube_postgre_pass: ""
+sonarqube_db_name: sonar
+sonarqube_user: sonar
+sonarqube_postgres_user: postgres
+sonarqube_users: [ "{{ sonarqube_user }}", "{{ sonarqube_postgres_user }}"]
+sonarqube_version: "sonarqube-8.2.0.32929"
+sonarqube_zip: "https://binaries.sonarsource.com/Distribution/sonarqube/{{ sonarqube_version }}.zip"
+sonarqube_zip_dest: "/opt/sonarqube.zip"
+sonarqube_folder: "/opt/sonarqube"
+sonarqube_properties: "{{ sonarqube_folder }}/conf/sonar.properties"
+sonarqube_data_dir: "/var/sonarqube/data"
+sonarqube_temp_dir: "/var/sonarqube/temp"

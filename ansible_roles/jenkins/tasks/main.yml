@@ -1,0 +1,55 @@
+---
+# tasks file for jenkins
+- name: Add key for Jenkins repository
+  rpm_key:
+    key: "{{ jenkins_repo_key }}"
+    state: present
+
+- name: Add jenkins repository
+  yum_repository:
+    name: jenkins
+    baseurl: "{{ jenkins_repository }}"
+    description: Jenkins repository for RHEL
+
+- name: Install needed packages
+  yum:
+    name: "{{ jenkins_pkgs }}"
+    state: present
+  
+- name: Start Jenkins
+  systemd:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Wait for jenkins to create "{{ jenkins_default_password }}"
+  wait_for:
+    path: "{{ jenkins_default_password }}"
+    delay: 10
+    timeout: 30
+    state: present
+    msg: "Specified file is not present"
+
+- name: Read Jenkins password
+  slurp:
+    src: "{{ jenkins_default_password }}"
+  register: jenkins_password_file
+  no_log: yes
+
+- name: Set fact
+  set_fact:
+    jenkins_admin_password: "{{ jenkins_password_file.content | b64decode | trim }}"
+  no_log: yes
+
+- name: Install needed Jenkins plugins
+  jenkins_plugin:
+    name: "{{ item }}"
+    state: present
+    url_username: admin
+    url_password: "{{ jenkins_admin_password }}"
+    url: http://localhost:8080
+  loop: "{{ jenkins_plugins }}"
+
+- name: Print default admin password
+  debug:
+    msg: "Your default admin password is in file {{ jenkins_default_password }}. The password is {{ jenkins_admin_password }}"

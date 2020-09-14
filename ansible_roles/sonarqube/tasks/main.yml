@@ -1,0 +1,146 @@
+---
+# tasks file for sonarqube
+- name: Install needed packages
+  yum:
+    name: "{{ sonarqube_prereq }}"
+    state: present
+
+- name: Create users
+  user:
+    name: "{{ item }}"
+    shell: /bin/bash
+    state: present
+  loop: "{{ sonarqube_users }}"
+
+- name: "Check if {{ sonarqube_folder }} exist"
+  stat:
+    path: "{{ sonarqube_folder }}"
+  register: st
+
+- name: "Download and unarchive sonarqube archive to {{ sonarqube_folder }}"
+  block:
+    - name: Download sonarqube archive
+      get_url:
+        url: "{{ sonarqube_zip }}"
+        dest: "{{ sonarqube_zip_dest }}"
+    - name: Unarchive sonarqube
+      unarchive:
+        src: "{{ sonarqube_zip_dest }}"
+        dest: "/opt"
+        remote_src: yes
+    - name: Rename folder
+      command: "mv /opt/{{ sonarqube_version }} {{ sonarqube_folder }}"
+      args: 
+        creates: "{{ sonarqube_folder }}"
+    - name: Change ownership
+      file:
+        path: "{{ sonarqube_folder }}"
+        owner: sonar
+        group: sonar
+        recurse: yes
+  when: not st.stat.exists
+
+- name: Create needed folders
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: sonar
+    group: sonar
+  loop:
+    - /var/sonarqube/temp
+    - /var/sonarqube/data
+
+- name: Install postgre packages
+  yum:
+    name: "{{ sonarquebe_postgre_pkgs }}"
+    state: present
+
+- name: Initialize the database
+  command: /usr/pgsql-10/bin/postgresql-10-setup initdb
+  args:
+    creates: /var/lib/pgsql/10/data/postgresql.conf
+
+- name: Copy pg_hba.conf
+  copy:
+    src: pg_hba.conf
+    dest: /var/lib/pgsql/10/data/pg_hba.conf
+  notify: Restart postgre
+
+- name: Start postgresql
+  systemd:
+    name: postgresql-10
+    state: started
+    enabled: yes
+
+- name: Generate random password for sonar user
+  block:  
+    - shell: "< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;"
+      changed_when: False
+      no_log: True
+      register: passwd
+    - set_fact: 
+        sonarqube_postgre_pass: "{{ passwd.stdout }}"
+      no_log: True
+      changed_when: False    
+
+- name: Create sonar user in postgre
+  postgresql_user:
+    user: sonar
+    password: "{{ sonarqube_postgre_pass }}"
+
+- name: Create sonar DB
+  postgresql_db:
+    encoding: UTF-8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+    name: "{{ sonarqube_db_name }}"
+    owner: "{{ sonarqube_user }}"
+    state: present
+    
+- name: Run sonarqube with user "{{ sonarqube_user }}"
+  lineinfile:
+    path: /opt/sonarqube/bin/linux-x86-64/sonar.sh
+    regexp: '^#RUN_AS_USER='
+    line: RUN_AS_USER="{{ sonarqube_user }}"
+  notify: Restart sonarqube
+
+- name: Setting up Sonarqube as a service
+  template:
+    src: sonarqube.service.j2
+    dest: /etc/systemd/system/sonarqube.service
+  notify: Restart sonarqube
+
+- name: Copy sonar.properties
+  template:
+    src: sonar.properties.j2
+    dest: "{{ sonarqube_properties }}"
+  notify: Restart sonarqube
+
+- name: Start sonarqube
+  systemd:
+    name: sonarqube
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+
+- name: Install nginx for reverse proxy
+  block:
+    - name: Install epel repo
+      yum:
+        name: epel-release
+        state: present
+    - name: Install nginx
+      yum:
+        name: nginx
+        state: present
+    - name: Copy nginx configuration
+      copy:
+        src: nginx_sonar.conf
+        dest: /etc/nginx/conf.d/nginx_sonar.conf
+      notify: Restart nginx
+    - name: Start nginx
+      systemd:
+        name: nginx
+        state: started
+  when: "sonarqube_proxy | default(True)"

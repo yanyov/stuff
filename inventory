@@ -1,0 +1,4 @@
+[swarm]
+vm1 	ansible_host=192.168.100.21
+vm2	ansible_host=192.168.100.22
+vm3	ansible_host=192.168.100.23

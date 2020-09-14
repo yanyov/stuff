@@ -1,0 +1,66 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vagrant.plugins = "vagrant-disksize"
+
+  config.vm.define "k8s_node1" do | k8s_node1|
+    k8s_node1.vm.box = "ubuntu/bionic64"
+    k8s_node1.vm.hostname = "k8snode1"
+    k8s_node1.vm.network "private_network", ip: "10.0.0.11",
+        auto_config: true,
+        virtualbox__intnet: "k8s-net"
+    k8s_node1.vm.network "private_network", ip: "192.168.100.11"
+#    k8s_node1.vm.network "public_network"
+    k8s_node1.disksize.size = '50GB'
+    
+    k8s_node1.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+      vb.name = "k8snode1"
+    end
+
+    k8s_node1.vm.provision "shell", path: "scripts/provisioner.sh"
+  end
+
+  config.vm.define "k8s_node2" do | k8s_node2|
+    k8s_node2.vm.box = "ubuntu/bionic64"
+    k8s_node2.vm.hostname = "k8snode2"
+    k8s_node2.vm.network "private_network", ip: "10.0.0.12",     
+        auto_config: true,
+        virtualbox__intnet: "k8s-net"
+    k8s_node2.vm.network "private_network", ip: "192.168.100.12"
+ #   k8s_node2.vm.network "public_network"
+    k8s_node2.disksize.size = '50GB'
+
+    k8s_node2.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+      vb.name = "k8snode2"
+    end
+
+    k8s_node2.vm.provision "shell", path: "scripts/provisioner.sh"
+  end
+
+  config.vm.define "k8s_master" do | k8s_master|
+    k8s_master.vm.box = "ubuntu/bionic64"
+    k8s_master.vm.hostname = "k8smaster"
+    k8s_master.vm.network "private_network", ip: "10.0.0.10",
+        auto_config: true,
+        virtualbox__intnet: "k8s-net"
+    k8s_master.vm.network "private_network", ip: "192.168.100.10"
+ #   k8s_master.vm.network "public_network"
+    k8s_master.disksize.size = '50GB'
+    
+    k8s_master.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+      vb.name = "k8smaster"
+    end
+    
+    k8s_master.vm.provision "shell", path: "scripts/provisioner.sh"
+    k8s_master.vm.provision "shell", path: "scripts/bootstrap_cluster.sh"
+  end
+
+end

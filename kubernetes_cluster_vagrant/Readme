@@ -1,0 +1,8 @@
+This repo will create kubernetes cluster with 1 master and 2 worker nodes for test purposes.
+ 
+Prerequisites:
+1.virtualbox
+2.vagrant
+
+Run:
+1.vagrant up

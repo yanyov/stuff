@@ -1,0 +1,50 @@
+pipeline{
+  agent{
+    label 'AndroidNode'
+  }
+  environment {
+    GIT_REPO = "ssh://git@bitbucket.scalefocus.com:7999/sv/android.git"
+    JFROG_REPO = "http://10.0.5.248:8082/artifactory/soundvision"
+  }
+  stages{
+    stage('Clone sources') {
+        steps {
+        git credentialsId: "teo_id",
+            url: "${GIT_REPO}"
+        sh "ls -a"
+        }
+    }
+    stage('Compile code') {
+        steps {
+        sh '''cd workshop/
+            pwd
+            ls -a
+            chmod +x gradlew
+            ./gradlew clean build
+            mv ./SVControlApp/build/outputs/apk/release/SVControlApp-release-unsigned.apk \
+            ./SVControlApp/build/outputs/apk/release/SVControlApp-release-${BUILD_NUMBER}.apk
+            mv ./SVControlApp/build/outputs/apk/debug/SVControlApp-debug.apk \
+            ./SVControlApp/build/outputs/apk/debug/SVControlApp-${BUILD_NUMBER}.apk
+            '''
+        }
+   }
+    stage('Upload artifact') {
+        steps {
+          withCredentials([usernamePassword(credentialsId: 'jfrog_creds', passwordVariable: 'PASSWD', usernameVariable: 'USER')]) {
+            sh '''
+            for i in debug outputs
+            do 
+              curl -u $USER:$PASSWD --progress-bar -T ./SVControlApp/build/${i}/apk/release/SVControlApp-release-${BUILD_NUMBER}.apk \
+              -X PUT \"${JFROG_REPO}/${i}/SVControlApp-release-${BUILD_NUMBER}.apk\"
+            done
+        '''
+        }
+     }
+   }
+  }
+  post {
+    always {
+      deleteDir()
+    }
+  }
+}

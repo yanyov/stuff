@@ -1,0 +1,13 @@
+docker_prerequisites:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg2
+  - software-properties-common
+docker_apt_key: "https://download.docker.com/linux/ubuntu/gpg"
+docker_repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+docker_pkgs:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+docker_nodes: [ "vm1", "vm2", "vm3" ]
