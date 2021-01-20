@@ -25,3 +25,5 @@ while True:
     
     if platform.system() == 'Windows':
         os.system("taskkill /f /im chrome.exe")
+    if platform.system() == 'Linux':
+        os.system('kill -9  chrome')
