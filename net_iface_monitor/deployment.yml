@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interface_monitor
+spec:
+  selector:
+    matchLabels:
+      app: interface_monitor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: interface_monitor
+    spec:
+      containers:
+        - name: interface_monitor
+          image: "docker_image"
+          ports:
+            - name: http
+              containerPort: 5000
+          env:
+          - name: API_ENDPOINT
+            value: 'y'
+      imagePullPolicy: Always
+              
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: interface_monitor
+spec:
+  selector:
+    app: interface_monitor
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: http
