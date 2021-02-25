@@ -24,8 +24,8 @@ sudo add-apt-repository \
     $(lsb_release -cs) \
     stable"
 sudo apt-get update
-DOCKER_VERSION="18.06.2~ce~3-0~ubuntu"
-sudo apt-get install -y docker-ce=$DOCKER_VERSION
+#DOCKER_VERSION="18.06.2~ce~3-0~ubuntu"
+sudo apt-get install -y containerd.io docker-ce
 
 sudo apt-mark hold docker-ce
 
@@ -51,13 +51,13 @@ systemctl restart docker
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 echo deb https://apt.kubernetes.io/ kubernetes-xenial main >> /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
-KUBE_VERSION="1.16.3-00"
+#KUBE_VERSION="1.16.3-00"
 sudo apt-get install -y \
-    kubelet=$KUBE_VERSION \
-    kubeadm=$KUBE_VERSION \
-    kubectl=$KUBE_VERSION
+    kubelet \
+    kubeadm \
+    kubectl
     
-sudo apt-mark hold kubelet kubeadm kubectl
+#sudo apt-mark hold kubelet kubeadm kubectl
 
 modprobe --all br_netfilter ip_vs ip_vs_rr ip_vs_wrr ip_vs_sh nf_conntrack_ipv4
 
