@@ -6,7 +6,7 @@ COPY requirements.txt .
 
 RUN pip install -r ./requirements.txt
 
-ENV DURATION='y'
+ENV API_ENDPOINT='y'
 
 EXPOSE 5000
 
