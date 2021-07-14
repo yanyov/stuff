@@ -6,7 +6,7 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --region us-west-2 --no-include-email)
-      - REPOSITORY_URI=127298087018.dkr.ecr.us-west-2.amazonaws.com/smart-search-grpc-product
+      - REPOSITORY_URI=XXXXXXXXXXXX.dkr.ecr.us-west-2.amazonaws.com/Microservice_A
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
@@ -21,8 +21,8 @@ phases:
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Update service grpc-product-service on cpq-smart-search-dev
-      - cat buildspec/taskdefinitions/task_definition_dev.json
+      - echo Update Microservice_A
+      - cat buildspec/task_definitions/task_definition_dev.json
       - sed -i "s|docker_image|$REPOSITORY_URI:$IMAGE_TAG|g" buildspec/taskdefinitions/task_definition_dev.json
       - cat buildspec/taskdefinitions/task_definition_dev.json
       - ARN=$(aws ecs register-task-definition --cli-input-json file://buildspec/taskdefinitions/task_definition_dev.json | jq -r .taskDefinition.taskDefinitionArn)

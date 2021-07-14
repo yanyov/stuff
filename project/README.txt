@@ -26,18 +26,21 @@ default network adapter.
 - main - the main method that's the entry point for the script.
 
 -----
-.gitlab-ci.yml - the file that is used by GitLab Runner to manage your 
-project's builds.
-This will build a Docker image, will tag this image with the current build id
-and put latest tag. It will push this newly created docker image to docker 
-registry and will deploy this image to kubernetes.
-
------
 Dockerfile - instruction on how to build our docker image.
 
 -----
-deployment.yml - this is used to deploy the docker image to kubernetes cluster.
-It will create deployment object and service.
+requirements.txt - here are required python modules for our python script.
 
 -----
-requirements.txt - here are required python modules for our python script.
+buildspec.yaml - buildspec is a collection of build commands and related settings, in YAML format,
+that CodeBuild uses to run a build. Without a build spec, 
+CodeBuild cannot successfully convert your build input into build output
+
+-----
+task_definition.json - A task definition is required to run Docker containers in Amazon ECS.
+
+-----
+HOW TO TEST LOCALLY
+1. Build docker image - "docker build -t iface ."
+2. Start docker container - "docker run -d -p 5000:5000 iface"
+3. Using web browser access your ip address at port 5000, under linux it will display TX/RX statistics of your default network interface
