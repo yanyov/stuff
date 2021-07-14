@@ -1,0 +1,33 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "Microservice_A",
+      "image": "docker_image",
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "hostPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/dev/Microservice_A",
+          "awslogs-region": "us-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "family": "Microservice_A",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "taskRoleArn": "arn:aws:iam::xxxxxxxxx:role/cpq-smart-search-dev-st-ecs-role",
+  "executionRoleArn": "arn:aws:iam::xxxxxxxxx:role/cpq-smart-search-dev-st-ecs-execution-role",
+  "networkMode": "awsvpc",
+  "cpu": "1024",
+  "memory": "2048"
+}

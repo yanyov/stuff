@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login --region us-west-2 --no-include-email)
+      - REPOSITORY_URI=127298087018.dkr.ecr.us-west-2.amazonaws.com/smart-search-grpc-product
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Update service grpc-product-service on cpq-smart-search-dev
+      - cat buildspec/taskdefinitions/task_definition_dev.json
+      - sed -i "s|docker_image|$REPOSITORY_URI:$IMAGE_TAG|g" buildspec/taskdefinitions/task_definition_dev.json
+      - cat buildspec/taskdefinitions/task_definition_dev.json
+      - ARN=$(aws ecs register-task-definition --cli-input-json file://buildspec/taskdefinitions/task_definition_dev.json | jq -r .taskDefinition.taskDefinitionArn)
+      - echo $ARN
+      - aws ecs update-service --cluster "cpq-smart-search-dev" --service "grpc-product-service" --task-definition $ARN
