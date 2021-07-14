@@ -32,15 +32,24 @@ Dockerfile - instruction on how to build our docker image.
 requirements.txt - here are required python modules for our python script.
 
 -----
-buildspec.yaml - buildspec is a collection of build commands and related settings, in YAML format,
+buildspec/buildspec_dev.yaml - buildspec is a collection of build commands and related settings, in YAML format,
 that CodeBuild uses to run a build. Without a build spec, 
 CodeBuild cannot successfully convert your build input into build output
 
 -----
-task_definition.json - A task definition is required to run Docker containers in Amazon ECS.
+buildspec/task_definitions/task_definition_dev.json - A task definition is required to run Docker containers in Amazon ECS.
+
+-----
+terraform/modules - terraform modules that can be use to deploy ECR and CodeBuild projects for our needs.
+
+-----
+terraform/environment - directory structure to demonstrate how to used our terraform modules to deploy resources in AWS.
+
+-----
+presentation.docx - document that give answer to topics that need to be discussed.
 
 -----
 HOW TO TEST LOCALLY
-1. Build docker image - "docker build -t iface ."
-2. Start docker container - "docker run -d -p 5000:5000 iface"
+1. Build docker image - "docker build -t my_image ."
+2. Start docker container - "docker run -d -p 5000:5000 my_image"
 3. Using web browser access your ip address at port 5000, under linux it will display TX/RX statistics of your default network interface
