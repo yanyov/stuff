@@ -27,7 +27,7 @@ ps:
 corda-initial-registration:
         docker exec -d corda java -jar /opt/corda/bin/corda.jar run-migration-scripts --core-schemas --app-schemas
         sleep $(TIMEOUT)
-        docker exec -d corda java -jar /opt/corda/bin/corda.jar initial-registration -p P@sS4Tru5tSt0r3
+        docker exec -d corda java -jar /opt/corda/bin/corda.jar initial-registration
         sleep $(TIMEOUT)
 
 corda:
