@@ -34,4 +34,4 @@ corda:
         docker exec -d corda java -jar /opt/corda/bin/corda.jar
 
 backend:
-        docker exec -d backend java -jar /opt/axedras/lib/axedras-api.jar --spring.config.location=file:/opt/axedras/backend.yml
+        docker exec -d backend java -jar /opt/lib/api.jar --spring.config.location=file:/opt/axedras/backend.yml
