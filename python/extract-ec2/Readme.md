@@ -5,6 +5,7 @@ Script that will output information for:
 *   ec2 instances in vpc
 *   nat gateways in vpc
 *   internet gateways in vpc
+*   route tables in vpc
 
 How to get information only for given vpc:
 *   python extract-ec2.py -vpcid vpc-0d9bb3757b5b7f14d

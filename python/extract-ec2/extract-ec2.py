@@ -29,6 +29,7 @@ def main():
             {'Name': 'instance-state-name', 'Values': ['pending', 'running', 'shutting-down', 'stopping', 'stopped']}])
         internet_gws = ec2.describe_internet_gateways()
         nat_gws = ec2.describe_nat_gateways()
+        route_tables = ec2.describe_route_tables()
     else:
         vpcs = ec2.describe_vpcs(Filters=[
             {
@@ -59,6 +60,11 @@ def main():
                 'Values': [filtr]
             }])
         nat_gws = ec2.describe_nat_gateways(Filters=[
+            {
+                'Name': 'vpc-id',
+                'Values': [filtr]
+            }])
+        route_tables = ec2.describe_route_tables(Filters=[
             {
                 'Name': 'vpc-id',
                 'Values': [filtr]
@@ -124,11 +130,14 @@ def main():
                     vpc_info[ind]['Internet-GW-{}-{}'.format(
                         vpc['VpcId'], internet_gw['InternetGatewayId'])] = internet_gw
 
-    print(json.dumps(vpc_info, sort_keys=True, default=str, indent=4))
+        for route_table in route_tables['RouteTables']:
+            for vpc in vpc_info:
+                if route_table['VpcId'] == vpc['VpcId']:
+                    ind = vpc_info.index(vpc)
+                    vpc_info[ind]['Route-Table-{}-{}'.format(
+                        vpc['VpcId'], route_table['RouteTableId'])] = route_table
 
-    # # print(json.dumps(nat_gws['NatGateways'], sort_keys=True, default=str, indent=4))
-    # print(json.dumps(internet_gws['InternetGateways'],
-    #       sort_keys=True, default=str, indent=4))
+    print(json.dumps(vpc_info, sort_keys=True, default=str, indent=4))
 
 
 if __name__ == '__main__':
