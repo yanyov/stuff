@@ -27,6 +27,8 @@ def main():
         security_groups = ec2.describe_security_groups()
         instances = ec2.describe_instances(Filters=[
             {'Name': 'instance-state-name', 'Values': ['pending', 'running', 'shutting-down', 'stopping', 'stopped']}])
+        internet_gws = ec2.describe_internet_gateways()
+        nat_gws = ec2.describe_nat_gateways()
     else:
         vpcs = ec2.describe_vpcs(Filters=[
             {
@@ -50,6 +52,16 @@ def main():
             }, {
                 'Name': 'instance-state-name',
                 'Values': ['pending', 'running', 'shutting-down', 'stopping', 'stopped']
+            }])
+        internet_gws = ec2.describe_internet_gateways(Filters=[
+            {
+                'Name': 'attachment.vpc-id',
+                'Values': [filtr]
+            }])
+        nat_gws = ec2.describe_nat_gateways(Filters=[
+            {
+                'Name': 'vpc-id',
+                'Values': [filtr]
             }])
 
     for vpc in vpcs['Vpcs']:
@@ -97,7 +109,26 @@ def main():
                     vpc_info[ind]['Instance-{}-{}'.format(
                         vpc['VpcId'], i['InstanceId'])] = i
 
+    for nat_gw in nat_gws['NatGateways']:
+        for vpc in vpc_info:
+            if nat_gw['VpcId'] == vpc['VpcId']:
+                ind = vpc_info.index(vpc)
+                vpc_info[ind]['Nat-GW-{}-{}'.format(
+                    vpc['VpcId'], nat_gw['NatGatewayId'])] = nat_gw
+
+    for internet_gw in internet_gws['InternetGateways']:
+        for internetgw in internet_gw['Attachments']:
+            for vpc in vpc_info:
+                if internetgw['VpcId'] == vpc['VpcId']:
+                    ind = vpc_info.index(vpc)
+                    vpc_info[ind]['Internet-GW-{}-{}'.format(
+                        vpc['VpcId'], internet_gw['InternetGatewayId'])] = internet_gw
+
     print(json.dumps(vpc_info, sort_keys=True, default=str, indent=4))
+
+    # # print(json.dumps(nat_gws['NatGateways'], sort_keys=True, default=str, indent=4))
+    # print(json.dumps(internet_gws['InternetGateways'],
+    #       sort_keys=True, default=str, indent=4))
 
 
 if __name__ == '__main__':
